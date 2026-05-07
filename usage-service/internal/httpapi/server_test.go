@@ -226,6 +226,121 @@ func TestModelPricesSyncFromLiteLLMFormat(t *testing.T) {
 	}
 }
 
+func TestUsageStatsEndpoints(t *testing.T) {
+	handler := newTestHandler(t, "http://example.test", true)
+
+	pricesBody := bytes.NewBufferString(`{"prices":{"gpt-test":{"prompt":1.0,"completion":2.0,"cache":0.5}}}`)
+	pricesReq := httptest.NewRequest(http.MethodPut, "/v0/management/model-prices", pricesBody)
+	pricesReq.Header.Set("Authorization", "Bearer management-key")
+	pricesRR := httptest.NewRecorder()
+	handler.ServeHTTP(pricesRR, pricesReq)
+	if pricesRR.Code != http.StatusOK {
+		t.Fatalf("save prices status = %d, body = %s", pricesRR.Code, pricesRR.Body.String())
+	}
+
+	importBody := bytes.NewBufferString(strings.Join([]string{
+		`{"timestamp":"2026-05-06T10:00:00Z","model":"gpt-test","api_key":"sk-user-1-abcdefghijklmnopqrstuvwxyz","source":"sk-user-1-abcdefghijklmnopqrstuvwxyz","input_tokens":100,"output_tokens":20,"reasoning_tokens":5,"cached_tokens":20,"total_tokens":145}`,
+		`{"timestamp":"2026-05-06T11:00:00Z","model":"gpt-test","api_key":"sk-user-1-abcdefghijklmnopqrstuvwxyz","source":"sk-user-1-abcdefghijklmnopqrstuvwxyz","input_tokens":50,"output_tokens":10,"total_tokens":60,"failed":true}`,
+		`{"timestamp":"2026-05-06T12:00:00Z","model":"gpt-test","api_key":"sk-user-2-abcdefghijklmnopqrstuvwxyz","source":"sk-user-2-abcdefghijklmnopqrstuvwxyz","input_tokens":30,"output_tokens":15,"cached_tokens":5,"total_tokens":50}`,
+	}, "\n"))
+	importReq := httptest.NewRequest(http.MethodPost, "/v0/management/usage/import", importBody)
+	importReq.Header.Set("Authorization", "Bearer management-key")
+	importRR := httptest.NewRecorder()
+	handler.ServeHTTP(importRR, importReq)
+	if importRR.Code != http.StatusOK {
+		t.Fatalf("import status = %d, body = %s", importRR.Code, importRR.Body.String())
+	}
+
+	overviewReq := httptest.NewRequest(http.MethodGet, "/v0/management/usage/overview?range=30d", nil)
+	overviewReq.Header.Set("Authorization", "Bearer management-key")
+	overviewRR := httptest.NewRecorder()
+	handler.ServeHTTP(overviewRR, overviewReq)
+	if overviewRR.Code != http.StatusOK {
+		t.Fatalf("overview status = %d, body = %s", overviewRR.Code, overviewRR.Body.String())
+	}
+	var overview struct {
+		Requests        int64 `json:"requests"`
+		SuccessCount    int64 `json:"successCount"`
+		FailureCount    int64 `json:"failureCount"`
+		InputTokens     int64 `json:"inputTokens"`
+		OutputTokens    int64 `json:"outputTokens"`
+		ReasoningTokens int64 `json:"reasoningTokens"`
+		CachedTokens    int64 `json:"cachedTokens"`
+		TotalTokens     int64 `json:"totalTokens"`
+		EstimatedCost   float64 `json:"estimatedCost"`
+		Series          []struct {
+			Requests int64 `json:"requests"`
+		} `json:"series"`
+	}
+	if err := json.Unmarshal(overviewRR.Body.Bytes(), &overview); err != nil {
+		t.Fatalf("decode overview: %v", err)
+	}
+	if overview.Requests != 3 || overview.SuccessCount != 2 || overview.FailureCount != 1 {
+		t.Fatalf("unexpected overview counters: %#v", overview)
+	}
+	if overview.InputTokens != 180 || overview.OutputTokens != 45 || overview.ReasoningTokens != 5 || overview.CachedTokens != 25 || overview.TotalTokens != 255 {
+		t.Fatalf("unexpected overview tokens: %#v", overview)
+	}
+	if overview.EstimatedCost <= 0 || len(overview.Series) == 0 {
+		t.Fatalf("unexpected overview cost/series: %#v", overview)
+	}
+
+	identitiesReq := httptest.NewRequest(http.MethodGet, "/v0/management/usage/identities?range=30d&limit=10", nil)
+	identitiesReq.Header.Set("Authorization", "Bearer management-key")
+	identitiesRR := httptest.NewRecorder()
+	handler.ServeHTTP(identitiesRR, identitiesReq)
+	if identitiesRR.Code != http.StatusOK {
+		t.Fatalf("identities status = %d, body = %s", identitiesRR.Code, identitiesRR.Body.String())
+	}
+	var identities struct {
+		Total int `json:"total"`
+		Items []struct {
+			IdentityHash  string  `json:"identityHash"`
+			DisplaySource string  `json:"displaySource"`
+			Requests      int64   `json:"requests"`
+			SuccessCount  int64   `json:"successCount"`
+			FailureCount  int64   `json:"failureCount"`
+			EstimatedCost float64 `json:"estimatedCost"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(identitiesRR.Body.Bytes(), &identities); err != nil {
+		t.Fatalf("decode identities: %v", err)
+	}
+	if identities.Total != 2 || len(identities.Items) != 2 {
+		t.Fatalf("unexpected identities payload: %#v", identities)
+	}
+	if identities.Items[0].IdentityHash == "" || identities.Items[0].DisplaySource == "" {
+		t.Fatalf("first identity missing fields: %#v", identities.Items[0])
+	}
+	if identities.Items[0].Requests != 2 || identities.Items[0].SuccessCount != 1 || identities.Items[0].FailureCount != 1 {
+		t.Fatalf("unexpected first identity stats: %#v", identities.Items[0])
+	}
+	if identities.Items[0].EstimatedCost <= 0 {
+		t.Fatalf("expected identity cost > 0: %#v", identities.Items[0])
+	}
+
+	eventsReq := httptest.NewRequest(http.MethodGet, "/v0/management/usage/events?range=30d&result=failed&page_size=10", nil)
+	eventsReq.Header.Set("Authorization", "Bearer management-key")
+	eventsRR := httptest.NewRecorder()
+	handler.ServeHTTP(eventsRR, eventsReq)
+	if eventsRR.Code != http.StatusOK {
+		t.Fatalf("events status = %d, body = %s", eventsRR.Code, eventsRR.Body.String())
+	}
+	var events struct {
+		Total int64 `json:"total"`
+		Items []struct {
+			Result string `json:"result"`
+			Failed bool   `json:"failed"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(eventsRR.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode events: %v", err)
+	}
+	if events.Total != 1 || len(events.Items) != 1 || !events.Items[0].Failed || events.Items[0].Result != "failed" {
+		t.Fatalf("unexpected events payload: %#v", events)
+	}
+}
+
 func closeFloat(left float64, right float64) bool {
 	return math.Abs(left-right) < 0.0000001
 }

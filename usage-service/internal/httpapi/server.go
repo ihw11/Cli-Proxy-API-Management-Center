@@ -399,10 +399,21 @@ func (s *Server) handleUsage(w http.ResponseWriter, r *http.Request) {
 	if !s.authorizeIfConfigured(w, r) {
 		return
 	}
+	path := strings.TrimRight(r.URL.Path, "/")
 	switch r.Method {
 	case http.MethodGet:
-		if strings.HasSuffix(r.URL.Path, "/export") {
+		switch path {
+		case "/v0/management/usage/export":
 			s.handleUsageExport(w, r)
+			return
+		case "/v0/management/usage/overview":
+			s.handleUsageOverview(w, r)
+			return
+		case "/v0/management/usage/identities":
+			s.handleUsageIdentities(w, r)
+			return
+		case "/v0/management/usage/events":
+			s.handleUsageEvents(w, r)
 			return
 		}
 		events, err := s.store.RecentEvents(r.Context(), s.cfg.QueryLimit)
@@ -412,7 +423,7 @@ func (s *Server) handleUsage(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, http.StatusOK, usage.BuildPayload(events))
 	case http.MethodPost:
-		if strings.HasSuffix(r.URL.Path, "/import") {
+		if path == "/v0/management/usage/import" {
 			s.handleUsageImport(w, r)
 			return
 		}

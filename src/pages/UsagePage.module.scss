@@ -1,0 +1,494 @@
+@use '../styles/variables.scss' as *;
+
+.page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.hero,
+.toolbarCard,
+.panelCard,
+.statCard,
+.chartCard {
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 28px;
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heroCopy {
+  display: grid;
+  gap: 10px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--bg-primary));
+  color: var(--primary-color);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(34px, 3.6vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 760px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.heroMeta {
+  display: grid;
+  align-content: start;
+  justify-items: end;
+  gap: 10px;
+  min-width: 280px;
+
+  @media (max-width: $breakpoint-tablet) {
+    justify-items: start;
+    min-width: 0;
+  }
+}
+
+.heroStat,
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.heroActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+
+  @media (max-width: $breakpoint-tablet) {
+    justify-content: flex-start;
+  }
+}
+
+.toolbarCard,
+.panelCard,
+.chartCard {
+  padding: 20px;
+}
+
+.toolbarCard {
+  display: grid;
+  gap: 16px;
+}
+
+.toolbarTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.segmentedControl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.segmentButton,
+.tabButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.segmentButton:hover,
+.tabButton:hover,
+.linkButton:hover,
+.inlineLink:hover {
+  transform: translateY(-1px);
+  color: var(--text-primary);
+}
+
+.segmentButtonActive,
+.tabButtonActive {
+  background: linear-gradient(135deg, var(--primary-color), color-mix(in srgb, var(--primary-color) 74%, #7c3aed));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+}
+
+.statusRow {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.customRangeGrid,
+.filtersGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.customRangeGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.notice,
+.errorBox,
+.loadingState,
+.emptyBlock {
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  padding: 14px 16px;
+}
+
+.notice,
+.emptyBlock {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.errorBox {
+  background: color-mix(in srgb, var(--error-color) 12%, var(--bg-primary));
+  color: var(--error-color);
+  border-color: color-mix(in srgb, var(--error-color) 30%, var(--border-color));
+}
+
+.tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tabButton {
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.loadingState {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+.statsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.statLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.statValue {
+  font-size: clamp(26px, 2.5vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.statMeta {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.chartGrid,
+.overviewGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  display: grid;
+  gap: 16px;
+}
+
+.chartHeader,
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.chartHeader h3,
+.panelHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.chartHeader p,
+.panelHeader p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.chartStats {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.chartWrap {
+  display: grid;
+  gap: 10px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  color: var(--primary-color);
+}
+
+.chartArea {
+  color: var(--primary-color);
+}
+
+.chartLine {
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chartAccentAlt {
+  color: #8b5cf6;
+}
+
+.chartAxis {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.inlineLink {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inlineHeaderActions {
+  min-width: min(320px, 100%);
+  flex: 1 1 260px;
+}
+
+.identityList,
+.tokenMixList {
+  display: grid;
+  gap: 14px;
+}
+
+.identityRow,
+.tokenMixRow {
+  display: grid;
+  gap: 10px;
+}
+
+.identityTop,
+.tokenMixTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.identityTop strong,
+.tokenMixTop strong {
+  display: block;
+}
+
+.identityTop span,
+.identityMeta,
+.tokenMixTop span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.identityMeta {
+  display: inline-flex;
+  gap: 12px;
+}
+
+.identityBarTrack,
+.tokenMixTrack {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+}
+
+.identityBarFill,
+.tokenMixFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--primary-color), #60a5fa);
+}
+
+.mixInput {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.mixOutput {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+
+.mixCached {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.mixReasoning {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table tbody tr:hover {
+  background: color-mix(in srgb, var(--bg-secondary) 56%, transparent);
+}
+
+.keyCell {
+  min-width: 180px;
+  word-break: break-word;
+}
+
+.resultSuccess,
+.resultFailed {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.resultSuccess {
+  background: color-mix(in srgb, var(--success-color) 14%, var(--bg-primary));
+  color: var(--success-color);
+}
+
+.resultFailed {
+  background: color-mix(in srgb, var(--error-color) 14%, var(--bg-primary));
+  color: var(--error-color);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.paginationButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
